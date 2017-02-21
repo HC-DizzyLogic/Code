@@ -1,6 +1,6 @@
 //============================================================================
 // Name        : HashCode.cpp
-// Author      : 
+// Author      :
 // Version     :
 // Copyright   : Your copyright notice
 // Description : Hello World in C++, Ansi-style
@@ -12,14 +12,12 @@
 #include <string>
 #include <vector>
 #include <stdlib.h>
+#include "Slice.cpp"
 
-using namespace std;
-struct coord {
-	int x;
-	double y;
-};
 
 void leeFichero(string name, int & rows, int & cols, int & min, int & max, vector<vector<char> > & body);
+vector<vector<int> > matrizValores (vector<vector<char> > pizza, int rows, int cols);
+vector<int> getMultiples (int num);
 coord Vecino (int i, coord actual);
 
 int main() {
@@ -30,7 +28,44 @@ int main() {
 	vector<vector<int> > slices(n_rows, vector<int> (n_cols, 0));
 	int min_slices = n_rows * n_cols / n_max;
 
-	while (num_slices <= min_slices){
+	bool new_possibilities = true;
+	vector<vector<int> > pot = matrizValores(pizza, n_rows, n_cols);
+
+	vector<int> mul = getMultiples(n_max);
+
+	while (new_possibilities){
+		for (int i = 0; i < (int)pot.size(); i++){
+			for (int j = 0; j < (int)pot[0].size(); j++){
+				Slice best_slice;
+				coord actual;
+				actual.x = i;
+				actual.y = j;
+				if (pot[i][j] == 0) {
+					for (int k = 0; k < (int)mul.size(); k++){
+						int height = mul[k];
+						int width = n_max / height;
+						coord corner;
+						corner.x = actual.x - width + 1;
+						if (corner.x < 0) corner.x = 0;
+						corner.y = actual.y - height + 1;
+						if (corner.y < 0) corner.y = 0;
+						Slice intento (corner, actual.x - corner.x + 1, actual.y - corner.y + 1, n_min, n_max, pizza);
+						if (intento.isCompleted()) best_slice = intento;
+
+						for (int l = 0; l < width; l++){
+							for (int m = 0; m < height; m++){
+
+							}
+						}
+
+
+					}
+				}
+			}
+		}
+	}
+
+	/*	while (num_slices <= min_slices){
 		int x = rand() % n_rows;
 		int y = rand() % n_cols;
 		int m = 0, t = 0;
@@ -81,6 +116,7 @@ int main() {
 			}
 		}
 	}
+	 */
 
 	for (int k = 0; k < (int)slices.size(); k++){
 		for (int l = 0; l < (int)slices[0].size(); l++){
@@ -89,6 +125,18 @@ int main() {
 		cout << endl;
 	}
 	return 0;
+}
+
+vector<int> getMultiples (int num){
+	vector<int> multiples;
+
+	for (int i = 0; i < num; i++){
+		if ((num % i == 0) && ((num - 1) % i == 0)){
+			multiples.push_back(i);
+		}
+	}
+
+	return multiples;
 }
 
 coord Vecino (int i, coord actual){
@@ -115,6 +163,34 @@ coord Vecino (int i, coord actual){
 	vecino.x = x + actual.x;
 	vecino.y = y + actual.y;
 	return vecino;
+}
+
+vector<vector<int> > matrizValores (vector<vector<char> > pizza, int rows, int cols){
+	vector<vector<int> > potencial (rows, vector<int> (cols, 0));
+	for (int i = 0; i < (int)pizza.size(); i ++){
+		for (int j = 0; j < (int)pizza[i].size(); j++){
+			int num_vecinos_diferentes = 0;
+			for (int n = 0; n < 4; n++){
+				coord actual; actual.x = i; actual.y = j;
+				coord vec = Vecino(n, actual);
+				if (vec.x >= 0 && vec.x < rows && vec.y >= 0 && vec.y < cols){
+					if ((pizza[actual.x][actual.y] == 'T' && pizza[vec.x][vec.y] == 'M')
+							|| (pizza[actual.x][actual.y] == 'M' && pizza[vec.x][vec.y] == 'T')){
+						num_vecinos_diferentes ++;
+					}
+				}
+			}
+			potencial[i][j] = num_vecinos_diferentes;
+		}
+	}
+
+	for (int k = 0; k < (int)potencial.size(); k++){
+		for (int l = 0; l < (int)potencial[0].size(); l++){
+			cout << potencial[k][l] << "  ";
+		}
+		cout << endl;
+	}
+	return potencial;
 }
 
 void leeFichero(string name, int & rows, int & cols, int & min, int & max, vector<vector<char> > & body){
