@@ -127,6 +127,10 @@ public:
 		this->width = width;
 	}
 
+	void toString(void) {
+		cout <<  "[" + to_string(top_left_corner.x) + ", " + to_string(top_left_corner.y) + "], ["
+				+ to_string(top_left_corner.x + width -1)+ ", " + to_string(top_left_corner.y + height - 1) + "]" << endl;
+	}
 private:
 	coord top_left_corner;
 	int num_tomatoes;

@@ -1,11 +1,11 @@
-//============================================================================
-// Name        : HashCode.cpp
-// Author      :
-// Version     :
-// Copyright   : Your copyright notice
-// Description : Hello World in C++, Ansi-style
-//============================================================================
-
+////============================================================================
+//// Name        : HashCode.cpp
+//// Author      :
+//// Version     :
+//// Copyright   : Your copyright notice
+//// Description : Hello World in C++, Ansi-style
+////============================================================================
+//
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -30,6 +30,7 @@ int main() {
 
 	bool new_possibilities = true;
 	vector<vector<int> > pot = matrizValores(pizza, n_rows, n_cols);
+	cout << "!!!" << endl;
 
 	vector<int> mul = getMultiples(n_max);
 
@@ -41,6 +42,7 @@ int main() {
 				actual.x = i;
 				actual.y = j;
 				if (pot[i][j] == 0) {
+					cout << "!!" << endl;
 					for (int k = 0; k < (int)mul.size(); k++){
 						int height = mul[k];
 						int width = n_max / height;
@@ -50,19 +52,26 @@ int main() {
 						corner.y = actual.y - height + 1;
 						if (corner.y < 0) corner.y = 0;
 						Slice intento (corner, actual.x - corner.x + 1, actual.y - corner.y + 1, n_min, n_max, pizza);
+						cout << height << ", " << width << " : ";
+						intento.toString();
 						if (intento.isCompleted()) best_slice = intento;
 
-						for (int l = 0; l < width; l++){
-							for (int m = 0; m < height; m++){
-
-							}
-						}
-
-
+//						for (int l = 0; l < width; l++){
+//							for (int m = 0; m < height; m++){
+//								for (int n = actual.x - corner.x + 1; n*height < n_max; n++){
+//									intento = Slice(corner, n,  actual.y - corner.y + 1, n_min, n_max, pizza);
+//									intento.toString();
+//
+//									if (intento.isCompleted() && n < best_slice.getWidth())
+//										best_slice = intento;
+//								}
+//							}
+//						}
 					}
 				}
 			}
 		}
+		cin.get();
 	}
 
 	/*	while (num_slices <= min_slices){
@@ -129,9 +138,10 @@ int main() {
 
 vector<int> getMultiples (int num){
 	vector<int> multiples;
+	for (int i = 1; i <= num; i++){
+		if ((num % i == 0) || ((num - 1) % i == 0)){
 
-	for (int i = 0; i < num; i++){
-		if ((num % i == 0) && ((num - 1) % i == 0)){
+			cout << i << endl;
 			multiples.push_back(i);
 		}
 	}
