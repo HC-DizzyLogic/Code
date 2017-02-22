@@ -35,42 +35,67 @@ int main() {
 	vector<int> mul = getMultiples(n_max);
 
 	while (new_possibilities){
+		new_possibilities = false;
 		for (int i = 0; i < (int)pot.size(); i++){
 			for (int j = 0; j < (int)pot[0].size(); j++){
-				Slice best_slice;
 				coord actual;
 				actual.x = i;
 				actual.y = j;
+				Slice best_slice(actual, 1, 5, n_min, n_max, pizza);
 				if (pot[i][j] == 0) {
-					cout << "!!" << endl;
+					new_possibilities = true;
+					cout << endl << endl << "Actual is : [" << i << ", " << j << "]" << endl;
 					for (int k = 0; k < (int)mul.size(); k++){
 						int height = mul[k];
 						int width = n_max / height;
+						cout << height << " : " << width << endl;
+
 						coord corner;
 						corner.x = actual.x - width + 1;
-						if (corner.x < 0) corner.x = 0;
 						corner.y = actual.y - height + 1;
-						if (corner.y < 0) corner.y = 0;
-						Slice intento (corner, actual.x - corner.x + 1, actual.y - corner.y + 1, n_min, n_max, pizza);
-						cout << height << ", " << width << " : ";
-						intento.toString();
-						if (intento.isCompleted()) best_slice = intento;
 
-//						for (int l = 0; l < width; l++){
-//							for (int m = 0; m < height; m++){
-//								for (int n = actual.x - corner.x + 1; n*height < n_max; n++){
-//									intento = Slice(corner, n,  actual.y - corner.y + 1, n_min, n_max, pizza);
-//									intento.toString();
-//
-//									if (intento.isCompleted() && n < best_slice.getWidth())
-//										best_slice = intento;
-//								}
-//							}
-//						}
+						for (int l = 0; l < width; l++)
+							for (int m = 0; m < height; m++){
+								coord n_corner; n_corner.x = corner.x + l; n_corner.y = corner.y + m;
+								if (n_corner.x < 0) continue;
+								if (n_corner.y < 0) continue;
+								if (n_corner.x + width - 1 > n_rows) continue;
+								if (n_corner.y + height - 1 > n_cols) continue;
+
+
+								if (width >= height){
+									for (int n = actual.x - n_corner.x + 1; n*height <= n_max; n++){
+										if (n*height > 2*n_min - 1){
+											Slice intento (n_corner, n,  height, n_min, n_max, pizza);
+//											cout << "w : " << n << " h : " << height << "; ";
+//											intento.toString();
+											if (intento.isCompleted()) cout << "hue" << intento.getWidth()*intento.getHeight() << endl;
+											if (intento.isCompleted()
+													&& intento.getWidth()*intento.getHeight() < best_slice.getWidth()*best_slice.getHeight())
+												best_slice = intento;
+										}
+									}
+								}
+								if (height > width){
+									for (int n = actual.y - n_corner.y + 1; n*width <= n_max; n++){
+										if (n*width > 2*n_min - 1){
+											Slice intento (n_corner, width,  n, n_min, n_max, pizza);
+//											cout << "w : " << width << " h : " << n << "; " ;
+//											intento.toString();
+											if (intento.isCompleted()) cout << "hue" <<  intento.getWidth()*intento.getHeight() << endl;
+											if (intento.isCompleted()
+													&& (intento.getWidth()*intento.getHeight()) < (best_slice.getWidth()*best_slice.getHeight()))
+												best_slice = intento;
+										}
+									}
+								}
+							}
 					}
+				best_slice.toString();
 				}
 			}
 		}
+
 		cin.get();
 	}
 
@@ -139,7 +164,7 @@ int main() {
 vector<int> getMultiples (int num){
 	vector<int> multiples;
 	for (int i = 1; i <= num; i++){
-		if ((num % i == 0) || ((num - 1) % i == 0)){
+		if ((num % i == 0) || (i != (num - 1) && (num - 1) % i == 0)){
 
 			cout << i << endl;
 			multiples.push_back(i);

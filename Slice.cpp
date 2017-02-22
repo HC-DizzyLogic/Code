@@ -7,7 +7,6 @@
 
 using namespace std;
 
-using namespace std;
 struct coord {
 	int x;
 	int y;
@@ -58,8 +57,9 @@ public:
 		int mushrooms = 0;
 		for (int i = 0; i < this->width; i++){
 			for (int j = 0; j < this->height; j++){
-				if (i < (int)pizza.size() && j < (int)pizza[0].size()){
-					if (pizza[i][j] == 'M'){
+				if (i + this->top_left_corner.x < (int)pizza.size()
+						&& j + this->top_left_corner.y < (int)pizza[0].size()){
+					if (pizza[i + this->top_left_corner.x][j + this->top_left_corner.y] == 'M'){
 						mushrooms ++;
 					}
 				}
@@ -72,8 +72,9 @@ public:
 		int tomatoes = 0;
 		for (int i = 0; i < this->width; i++){
 			for (int j = 0; j < this->height; j++){
-				if (i < (int)pizza.size() && j < (int)pizza[0].size()){
-					if (pizza[i][j] == 'T'){
+				if (i + this->top_left_corner.x < (int)pizza.size()
+						&& j + this->top_left_corner.y < (int)pizza[0].size()){
+					if (pizza[i + this->top_left_corner.x][j + this->top_left_corner.y] == 'T'){
 						tomatoes ++;
 					}
 				}
@@ -83,6 +84,8 @@ public:
 	}
 
 	bool checkSlice() {
+		//		if (this->num_mushrooms > this->min_vegetables) cout << "mushrooms ok";
+		//		if (this->num_tomatoes > this->min_vegetables) cout << "tomatoes ok";
 		this->completed = (this->num_mushrooms > this->min_vegetables) && (this->num_tomatoes > this->min_vegetables);
 		return this->completed;
 	}
@@ -96,7 +99,7 @@ public:
 	}
 
 	int getHeight() const {
-		return height;
+		return this->height;
 	}
 
 	void setHeight(int height) {
@@ -104,7 +107,7 @@ public:
 	}
 
 	int getMaxSize() const {
-		return max_size;
+		return this->max_size;
 	}
 
 	void setMaxSize(int maxSize) {
@@ -120,7 +123,7 @@ public:
 	}
 
 	int getWidth() const {
-		return width;
+		return this->width;
 	}
 
 	void setWidth(int width) {
