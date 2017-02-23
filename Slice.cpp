@@ -144,9 +144,12 @@ public:
 		this->width = width;
 	}
 
-	void toString(void) {
-		cout <<  "[" + to_string(top_left_corner.x) + ", " + to_string(top_left_corner.y) + "], ["
-				+ to_string(top_left_corner.x + height -1)+ ", " + to_string(top_left_corner.y + width - 1) + "]" << endl;
+	string toString(void) {
+		string slice;
+		slice = to_string(top_left_corner.x) + " " + to_string(top_left_corner.y) + " "
+				+ to_string(top_left_corner.x + height -1)+ " " + to_string(top_left_corner.y + width - 1) + "\n";
+		cout << slice;
+		return slice;
 	}
 
 	coord getTopLeftCorner() const {
@@ -156,6 +159,116 @@ public:
 	void setTopLeftCorner(coord topLeftCorner) {
 		top_left_corner = topLeftCorner;
 	}
+
+	bool expandibleN(vector<vector<char> > pizza){
+		bool exp = false;
+		bool libre = true;
+		bool space = (width * height + width) < max_size;
+
+		if (!space) return false;
+		else {
+			for (int i = 0; i < width; i++){
+				if (this->top_left_corner.x - 1 >= 0){
+					if(pizza[this->top_left_corner.x - 1][this->top_left_corner.y + i] == 'A') exp = true;
+					if(pizza[this->top_left_corner.x - 1][this->top_left_corner.y + i] == 'V') libre = false;
+				}
+			}
+			return exp && libre;
+		}
+	}
+
+	bool expandibleS(vector<vector<char> > pizza){
+		bool exp = false;
+		bool libre = true;
+		bool space = (width * height + width) <= max_size;
+
+		if (!space){
+//			cout << "not enough space" << endl;
+			return false;
+		}
+		else {
+			for (int i = 0; i < width; i++){
+				if (this->top_left_corner.x + height < (int)pizza.size()){
+//					cout << "pizza[" << this->top_left_corner.x + height << "][" << this->top_left_corner.y + i << "]" << endl;
+					if(pizza[this->top_left_corner.x + height][this->top_left_corner.y + i] == 'A'){
+						exp = true;
+					}
+					if(pizza[this->top_left_corner.x + height][this->top_left_corner.y + i] == 'V'){
+						libre = false;
+					}
+				}
+			}
+			return exp && libre;
+		}
+	}
+
+	bool expandibleE(vector<vector<char> > pizza){
+		bool exp = false;
+		bool libre = true;
+		bool space = (width * height + height) < max_size;
+
+		if (!space) return false;
+		else {
+			for (int i = 0; i < height; i++){
+				if (this->top_left_corner.y + width < (int)pizza[0].size()){
+					if(pizza[this->top_left_corner.x + i][this->top_left_corner.y + width] == 'A') exp = true;
+					if(pizza[this->top_left_corner.x + i][this->top_left_corner.y + width] == 'V') libre = false;
+				}
+			}
+			return exp && libre;
+		}
+	}
+
+	bool expandibleW(vector<vector<char> > pizza){
+		bool exp = false;
+		bool libre = true;
+		bool space = (width * height + height) < max_size;
+
+		if (!space) return false;
+		else {
+			for (int i = 0; i < height; i++){
+				if (this->top_left_corner.y - 1 >= 0){
+					if(pizza[this->top_left_corner.x + i][this->top_left_corner.y - 1] == 'A') exp = true;
+					if(pizza[this->top_left_corner.x + i][this->top_left_corner.y - 1] == 'V') libre = false;
+				}
+			}
+			return exp && libre;
+		}
+	}
+
+	void expandN(vector<vector<char> > & pizza){
+		this->top_left_corner.x --;
+		this->height ++;
+		for (int i = 0; i < width; i++){
+//			cout << "pizza[" << this->top_left_corner.x << "][" << this->top_left_corner.y + i << "]" << endl;
+			pizza[this->top_left_corner.x][this->top_left_corner.y + i] = 'V';
+		}
+	}
+
+	void expandS(vector<vector<char> > & pizza){
+			this->height ++;
+			for (int i = 0; i < width; i++){
+//				cout << "pizza[" << this->top_left_corner.x + height - 1 << "][" << this->top_left_corner.y + i << "]" << endl;
+				pizza[this->top_left_corner.x + height - 1][this->top_left_corner.y + i] = 'V';
+			}
+		}
+
+	void expandE(vector<vector<char> > & pizza){
+			this->width ++;
+			for (int i = 0; i < height; i++){
+//				cout << "pizza[" << this->top_left_corner.x + i << "][" << this->top_left_corner.y + width - 1 << "]" << endl;
+				pizza[this->top_left_corner.x + i][this->top_left_corner.y + width - 1] = 'V';
+			}
+		}
+
+	void expandW(vector<vector<char> > & pizza){
+			this->top_left_corner.y --;
+			this->width ++;
+			for (int i = 0; i < height; i++){
+//				cout << "pizza[" << this->top_left_corner.x + i << "][" << this->top_left_corner.y << "]" << endl;
+				pizza[this->top_left_corner.x + i][this->top_left_corner.y ] = 'V';
+			}
+		}
 
 private:
 	coord top_left_corner;

@@ -14,7 +14,7 @@ void leeFichero(string name, int & rows, int & cols, int & min, int & max, vecto
 vector<vector<int> > matrizValores(vector<vector<char> > pizza, int rows, int cols);
 vector<int> getMultiples (int num);
 void asignaVecinos(coord actual, Slice & best_slice, bool & cambiado, vector<int> mul, int n_rows, int n_cols, int n_max, int n_min, vector<vector<char> > & pizza);
-void expand(vector<vector<char> > pizza, vector<Slice> & slices);
+void expand(vector<vector<char> > & pizza, vector<Slice> & slices);
 coord Vecino(int i, coord actual);
 
 int main() {
@@ -22,7 +22,7 @@ int main() {
 	vector<vector<char> > pizza;
 	vector<Slice> slices;
 
-	leeFichero("medium.in", n_rows, n_cols, n_min, n_max, pizza);
+	leeFichero("big.in", n_rows, n_cols, n_min, n_max, pizza);
 
 	bool new_possibilities = true;
 	vector<vector<int> > pot = matrizValores(pizza, n_rows, n_cols);
@@ -91,6 +91,7 @@ int main() {
 				}
 			}
 		}
+		expand(pizza, slices);
 
 		if (!new_possibilities){
 			for (int i = 0; i < (int)pot.size(); i++){
@@ -122,6 +123,8 @@ int main() {
 				}
 			}
 		}
+		expand(pizza, slices);
+
 		for (int i = 0; i < n_rows; i++){ // To get you all the lines.
 			for (int j = 0; j < n_cols; j++){
 				cout << pizza[i][j];
@@ -144,6 +147,13 @@ int main() {
 		cin.get();
 	}
 
+	  ofstream myfile;
+	  myfile.open ("result.txt");
+	  myfile << to_string((int)slices.size()) + "\n";
+	  for (int i = 0; i < (int)slices.size(); i++){
+		  myfile << slices[i].toString();
+	  }
+	  myfile.close();
 	return 0;
 }
 
@@ -252,12 +262,29 @@ void asignaVecinos (coord actual, Slice & best_slice, bool & cambiado, vector<in
 	//	cin.get();
 }
 
-void expand (vector<vector<char> > pizza, vector<Slice> & slices) {
-	//	for (int i = 0; i < (int)pizza.size(); i++){
-	//		for (int j = 0; j < (int)pizza[0].size(); j++){
-	//			if
-	//		}
-	//	}
+void expand (vector<vector<char> > & pizza, vector<Slice> & slices) {
+	cout << "Expand!" << endl;
+	for (int i = 0; i < (int)slices.size(); i++){
+		cout << "Slice " << i << endl;
+		if (slices[i].expandibleN(pizza)){
+			cout << "Expandible N" << endl;
+			slices[i].expandN(pizza);
+		}// else cout << "n_e_N" << endl;
+		if (slices[i].expandibleS(pizza)){
+			cout << "Expandible S" << endl;
+			slices[i].expandS(pizza);
+		}// else cout << "n_e_S" << endl;
+		if (slices[i].expandibleE(pizza)){
+			cout << "Expandible E" << endl;
+			slices[i].expandE(pizza);
+		}// else cout << "n_e_E" << endl;
+		if (slices[i].expandibleW(pizza)){
+			cout << "Expandible W" << endl;
+			slices[i].expandW(pizza);
+		}// else cout << "n_e_W" << endl;
+
+		cout << " - " << i << endl;
+	}
 }
 
 vector<vector<int> > matrizValores (vector<vector<char> > pizza, int rows, int cols){
