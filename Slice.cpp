@@ -26,9 +26,10 @@ public:
 		this->min_vegetables = 0;
 		this->max_size = 0;
 		this->completed = false;
+		this->empties = true;
 	}
 
-	Slice(coord tlc, int t, int m, int w, int h, int min, int max, bool c){
+	Slice(coord tlc, int t, int m, int h, int w, int min, int max, bool c, bool e){
 		this->top_left_corner = tlc;
 		this->num_mushrooms = m;
 		this->num_tomatoes = t;
@@ -37,9 +38,10 @@ public:
 		this->min_vegetables = min;
 		this->max_size = max;
 		this->completed = c;
+		this->empties = e;
 	}
 
-	Slice(coord tlc, int w, int h, int min, int max, vector<vector<char> > pizza){
+	Slice(coord tlc, int h, int w, int min, int max, vector<vector<char> > pizza){
 		this->top_left_corner = tlc;
 		this->num_mushrooms = 0;
 		this->num_tomatoes = 0;
@@ -48,6 +50,7 @@ public:
 		this->min_vegetables = min;
 		this->max_size = max;
 		this->completed = false;
+		this->empties = false;
 		this->lookForMushrooms(pizza);
 		this->lookForTomatoes(pizza);
 		this->checkSlice();
@@ -55,12 +58,14 @@ public:
 
 	void lookForMushrooms(vector<vector<char> > pizza){
 		int mushrooms = 0;
-		for (int i = 0; i < this->width; i++){
-			for (int j = 0; j < this->height; j++){
+		for (int i = 0; i < this->height; i++){
+			for (int j = 0; j < this->width; j++){
 				if (i + this->top_left_corner.x < (int)pizza.size()
 						&& j + this->top_left_corner.y < (int)pizza[0].size()){
 					if (pizza[i + this->top_left_corner.x][j + this->top_left_corner.y] == 'M'){
 						mushrooms ++;
+					} else if (pizza[i + this->top_left_corner.x][j + this->top_left_corner.y] == 'V'){
+						this->empties = true;
 					}
 				}
 			}
@@ -70,23 +75,32 @@ public:
 
 	void lookForTomatoes(vector<vector<char> > pizza){
 		int tomatoes = 0;
-		for (int i = 0; i < this->width; i++){
-			for (int j = 0; j < this->height; j++){
+		for (int i = 0; i < this->height; i++){
+			for (int j = 0; j < this->width; j++){
 				if (i + this->top_left_corner.x < (int)pizza.size()
 						&& j + this->top_left_corner.y < (int)pizza[0].size()){
 					if (pizza[i + this->top_left_corner.x][j + this->top_left_corner.y] == 'T'){
 						tomatoes ++;
+					} else if (pizza[i + this->top_left_corner.x][j + this->top_left_corner.y] == 'V'){
+						this->empties = true;
 					}
 				}
 			}
 		}
 		this->num_tomatoes = tomatoes;
+
+		//		for (int i = 0; i < this->height; i++){
+		//			for (int j = 0; j < this->width; j++){
+		//				cout << pizza[i + this->top_left_corner.x][j + this->top_left_corner.y];
+		//			}
+		//			cout << endl;
+		//		}
 	}
 
 	bool checkSlice() {
 		//		if (this->num_mushrooms > this->min_vegetables) cout << "mushrooms ok";
 		//		if (this->num_tomatoes > this->min_vegetables) cout << "tomatoes ok";
-		this->completed = (this->num_mushrooms > this->min_vegetables) && (this->num_tomatoes > this->min_vegetables);
+		this->completed = !this->empties && (this->num_mushrooms >= this->min_vegetables) && (this->num_tomatoes >= this->min_vegetables);
 		return this->completed;
 	}
 
@@ -132,8 +146,17 @@ public:
 
 	void toString(void) {
 		cout <<  "[" + to_string(top_left_corner.x) + ", " + to_string(top_left_corner.y) + "], ["
-				+ to_string(top_left_corner.x + width -1)+ ", " + to_string(top_left_corner.y + height - 1) + "]" << endl;
+				+ to_string(top_left_corner.x + height -1)+ ", " + to_string(top_left_corner.y + width - 1) + "]" << endl;
 	}
+
+	coord getTopLeftCorner() const {
+		return top_left_corner;
+	}
+
+	void setTopLeftCorner(coord topLeftCorner) {
+		top_left_corner = topLeftCorner;
+	}
+
 private:
 	coord top_left_corner;
 	int num_tomatoes;
@@ -143,4 +166,5 @@ private:
 	int min_vegetables;
 	int max_size;
 	bool completed;
+	bool empties;
 };

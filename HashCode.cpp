@@ -6,31 +6,26 @@
 //// Description : Hello World in C++, Ansi-style
 ////============================================================================
 //
-#include <iostream>
 #include <fstream>
 #include <sstream>
-#include <string>
-#include <vector>
-#include <stdlib.h>
 #include "Slice.cpp"
 
-
 void leeFichero(string name, int & rows, int & cols, int & min, int & max, vector<vector<char> > & body);
-vector<vector<int> > matrizValores (vector<vector<char> > pizza, int rows, int cols);
+vector<vector<int> > matrizValores(vector<vector<char> > pizza, int rows, int cols);
 vector<int> getMultiples (int num);
-coord Vecino (int i, coord actual);
+void asignaVecinos(coord actual, Slice & best_slice, bool & cambiado, vector<int> mul, int n_rows, int n_cols, int n_max, int n_min, vector<vector<char> > & pizza);
+void expand(vector<vector<char> > pizza, vector<Slice> & slices);
+coord Vecino(int i, coord actual);
 
 int main() {
-	int n_rows = 0, n_cols = 0, n_min = 0, n_max = 0, num_slices = 1;
+	int n_rows = 0, n_cols = 0, n_min = 0, n_max = 0;
 	vector<vector<char> > pizza;
+	vector<Slice> slices;
 
-	leeFichero("small.in", n_rows, n_cols, n_min, n_max, pizza);
-	vector<vector<int> > slices(n_rows, vector<int> (n_cols, 0));
-	int min_slices = n_rows * n_cols / n_max;
+	leeFichero("medium.in", n_rows, n_cols, n_min, n_max, pizza);
 
 	bool new_possibilities = true;
 	vector<vector<int> > pot = matrizValores(pizza, n_rows, n_cols);
-	cout << "!!!" << endl;
 
 	vector<int> mul = getMultiples(n_max);
 
@@ -41,133 +36,129 @@ int main() {
 				coord actual;
 				actual.x = i;
 				actual.y = j;
-				Slice best_slice(actual, 1, 5, n_min, n_max, pizza);
+				Slice best_slice(actual, 1, n_max, n_min, n_max, pizza);
+				bool cambiado = false;
 				if (pot[i][j] == 0) {
 					new_possibilities = true;
-					cout << endl << endl << "Actual is : [" << i << ", " << j << "]" << endl;
-					for (int k = 0; k < (int)mul.size(); k++){
-						int height = mul[k];
-						int width = n_max / height;
-						cout << height << " : " << width << endl;
+					asignaVecinos(actual, best_slice, cambiado, mul, n_rows, n_cols, n_max, n_min, pizza);
 
-						coord corner;
-						corner.x = actual.x - width + 1;
-						corner.y = actual.y - height + 1;
-
-						for (int l = 0; l < width; l++)
-							for (int m = 0; m < height; m++){
-								coord n_corner; n_corner.x = corner.x + l; n_corner.y = corner.y + m;
-								if (n_corner.x < 0) continue;
-								if (n_corner.y < 0) continue;
-								if (n_corner.x + width - 1 > n_rows) continue;
-								if (n_corner.y + height - 1 > n_cols) continue;
-
-
-								if (width >= height){
-									for (int n = actual.x - n_corner.x + 1; n*height <= n_max; n++){
-										if (n*height > 2*n_min - 1){
-											Slice intento (n_corner, n,  height, n_min, n_max, pizza);
-//											cout << "w : " << n << " h : " << height << "; ";
-//											intento.toString();
-											if (intento.isCompleted()) cout << "hue" << intento.getWidth()*intento.getHeight() << endl;
-											if (intento.isCompleted()
-													&& intento.getWidth()*intento.getHeight() < best_slice.getWidth()*best_slice.getHeight())
-												best_slice = intento;
-										}
-									}
-								}
-								if (height > width){
-									for (int n = actual.y - n_corner.y + 1; n*width <= n_max; n++){
-										if (n*width > 2*n_min - 1){
-											Slice intento (n_corner, width,  n, n_min, n_max, pizza);
-//											cout << "w : " << width << " h : " << n << "; " ;
-//											intento.toString();
-											if (intento.isCompleted()) cout << "hue" <<  intento.getWidth()*intento.getHeight() << endl;
-											if (intento.isCompleted()
-													&& (intento.getWidth()*intento.getHeight()) < (best_slice.getWidth()*best_slice.getHeight()))
-												best_slice = intento;
-										}
-									}
-								}
+					if (cambiado){
+						best_slice.toString();
+						slices.push_back(best_slice);
+						for (int i = 0; i < best_slice.getHeight(); i++){
+							for (int j = 0; j < best_slice.getWidth(); j++){
+								pizza[i + best_slice.getTopLeftCorner().x][j + best_slice.getTopLeftCorner().y] = 'V';
 							}
+						}
+						pot = matrizValores(pizza, n_rows, n_cols);
+
+					} else {
+						pizza[actual.x][actual.y] = 'A';
+
 					}
-				best_slice.toString();
 				}
 			}
 		}
+		expand(pizza, slices);
+
+		if (!new_possibilities){
+			for (int i = 0; i < (int)pot.size(); i++){
+				for (int j = 0; j < (int)pot[0].size(); j++){
+					coord actual;
+					actual.x = i;
+					actual.y = j;
+					Slice best_slice(actual, 1, n_max, n_min, n_max, pizza);
+					bool cambiado = false;
+					if (pot[i][j] == 1) {
+						new_possibilities = true;
+						asignaVecinos(actual, best_slice, cambiado, mul, n_rows, n_cols, n_max, n_min, pizza);
+
+						if (cambiado){
+							best_slice.toString();
+							slices.push_back(best_slice);
+							for (int i = 0; i < best_slice.getHeight(); i++){
+								for (int j = 0; j < best_slice.getWidth(); j++){
+									pizza[i + best_slice.getTopLeftCorner().x][j + best_slice.getTopLeftCorner().y] = 'V';
+								}
+							}
+							pot = matrizValores(pizza, n_rows, n_cols);
+
+						} else {
+							pizza[actual.x][actual.y] = 'A';
+
+						}
+					}
+				}
+			}
+		}
+
+		if (!new_possibilities){
+			for (int i = 0; i < (int)pot.size(); i++){
+				for (int j = 0; j < (int)pot[0].size(); j++){
+					coord actual;
+					actual.x = i;
+					actual.y = j;
+					Slice best_slice(actual, 1, n_max, n_min, n_max, pizza);
+					bool cambiado = false;
+					if (pot[i][j] > 1) {
+						new_possibilities = true;
+						asignaVecinos(actual, best_slice, cambiado, mul, n_rows, n_cols, n_max, n_min, pizza);
+
+						if (cambiado){
+							best_slice.toString();
+							slices.push_back(best_slice);
+							for (int i = 0; i < best_slice.getHeight(); i++){
+								for (int j = 0; j < best_slice.getWidth(); j++){
+									pizza[i + best_slice.getTopLeftCorner().x][j + best_slice.getTopLeftCorner().y] = 'V';
+								}
+							}
+							pot = matrizValores(pizza, n_rows, n_cols);
+
+						} else {
+							pizza[actual.x][actual.y] = 'A';
+
+						}
+					}
+				}
+			}
+		}
+		for (int i = 0; i < n_rows; i++){ // To get you all the lines.
+			for (int j = 0; j < n_cols; j++){
+				cout << pizza[i][j];
+			}
+			cout<< endl;
+		}
+
+		pot = matrizValores(pizza, n_rows, n_cols);
+		int in_slice = 0, out_slice = 0;
+		for (int i = 0; i < n_rows; i++){ // To get you all the lines.
+			for (int j = 0; j < n_cols; j++){
+				if (pizza[i][j] == 'V') in_slice ++;
+				else if (pizza[i][j] == 'A') out_slice ++;
+			}
+		}
+
+		cout << "Num in slice : " << ((float)in_slice / (float)(n_cols*n_rows))*100 << "%" << endl;
+		cout << "Num out slice : " << ((float)out_slice / (float)(n_cols*n_rows))*100 << "%" <<  endl;
 
 		cin.get();
 	}
 
-	/*	while (num_slices <= min_slices){
-		int x = rand() % n_rows;
-		int y = rand() % n_cols;
-		int m = 0, t = 0;
-		if (slices[x][y] == 0){
-			bool completed = false;
-			cout << "New slice in: " << x << ", " << y << endl;
-			slices[x][y] = num_slices;
-			coord actual;
-			actual.x = x;
-			actual.y = y;
-
-			if (pizza[x][y] == 'T') t++;
-			else if (pizza[x][y] == 'M') m++;
-			else cout << "error";
-
-			for (int j = 0; j < 4; j++){
-				coord vecino = Vecino(j, actual);
-				if (vecino.x < n_rows && vecino.x >= 0 && vecino.y < n_cols && vecino.y >= 0){
-					if (slices[vecino.x][vecino.y] == 0){
-						if (pizza[vecino.x][vecino.y] == 'T' && t < n_min){
-							slices[vecino.x][vecino.y] = num_slices;
-							t++;
-						}
-						if (pizza[vecino.x][vecino.y] == 'M' && m < n_min){
-							slices[vecino.x][vecino.y] = num_slices;
-							m++;
-						}
-						if (m == n_min && t == n_min){
-							completed = true;
-							num_slices ++;
-							break;
-						}
-					}
-				}
-			}
-			if (!completed){
-				slices[x][y] = 0;
-			}
-
-			if (completed){
-				cout << "Slice completed: " << num_slices - 1 << endl;
-				for (int k = 0; k < (int)slices.size(); k++){
-					for (int l = 0; l < (int)slices[0].size(); l++){
-						cout << slices[k][l];
-					}
-					cout << endl;
-				}
-			}
-		}
-	}
-	 */
-
-	for (int k = 0; k < (int)slices.size(); k++){
-		for (int l = 0; l < (int)slices[0].size(); l++){
-			cout << slices[k][l] << " : " << pizza[k][l] << "  ";
-		}
-		cout << endl;
-	}
 	return 0;
 }
 
 vector<int> getMultiples (int num){
 	vector<int> multiples;
-	for (int i = 1; i <= num; i++){
-		if ((num % i == 0) || (i != (num - 1) && (num - 1) % i == 0)){
-
+	for (int i = 1; i <= num / 2; i++){
+		if (num % i == 0) {
+			cout << i << endl;
+			cout << num/i << endl;
+			multiples.push_back(i);
+			multiples.push_back(num/i);
+		} else if (i != (num - 1) && (num - 1) % i == 0){
 			cout << i << endl;
 			multiples.push_back(i);
+			if ((num - 1) / i != i) multiples.push_back((num - 1)/i);
 		}
 	}
 
@@ -200,38 +191,113 @@ coord Vecino (int i, coord actual){
 	return vecino;
 }
 
+void asignaVecinos (coord actual, Slice & best_slice, bool & cambiado, vector<int> mul, int n_rows, int n_cols, int n_max, int n_min, vector<vector<char> > & pizza) {
+	cout << "actual: " << actual.x << ", " << actual.y << endl;
+	for (int k = 0; k < (int)mul.size(); k++){
+		int rows = mul[k];
+		int cols = n_max / rows;
+
+		coord corner;
+		corner.x = actual.x - rows + 1;
+		corner.y = actual.y - cols + 1;
+
+		for (int l = 0; l < rows; l++){
+			for (int m = 0; m < cols; m++){
+				coord n_corner;
+				n_corner.x = corner.x + l;
+				n_corner.y = corner.y + m;
+				//				cout << "n_corner = [" << n_corner.x << ", " << n_corner.y << "]" << endl;
+				if (n_corner.x < 0) continue;
+				if (n_corner.y < 0) continue;
+
+				if (cols >= rows){
+					for (int n = actual.y - n_corner.y + 1; n*rows <= n_max; n++){
+						if (n_corner.x + rows - 1 > n_rows) continue;
+						if (n_corner.y + n - 1 > n_cols) continue;
+						if (n*rows >= 2*n_min){
+							Slice intento (n_corner, rows,  n, n_min, n_max, pizza);
+							//							cout << "w : " << n << " h : " << rows << "; ";
+							//							intento.toString();
+							//							if (intento.isCompleted()) cout << "Completed " << intento.getWidth()*intento.getHeight() << endl;
+							if (intento.isCompleted() &&
+									intento.getWidth()*intento.getHeight() < best_slice.getWidth()*best_slice.getHeight()){
+								best_slice = intento;
+								cambiado = true;
+							}
+						}
+					}
+				} else if (cols < rows){
+					for (int n = actual.x - n_corner.x + 1; n*cols <= n_max; n++){
+						if (n_corner.x + n - 1 > n_rows) continue;
+						if (n_corner.y + cols - 1 > n_cols) continue;
+						if (n*cols >= 2*n_min){
+							Slice intento (n_corner, n,  cols, n_min, n_max, pizza);
+							//							cout << "w : " << cols << " h : " << n << "; " << actual.y << ", " << n_corner.y << ";" ;
+							//							intento.toString();
+							//							if (intento.isCompleted()) cout << "Completed" <<  intento.getWidth()*intento.getHeight() << endl;
+							if (intento.isCompleted() &&
+									(intento.getWidth()*intento.getHeight()) < best_slice.getWidth()*best_slice.getHeight()){
+								best_slice = intento;
+								cambiado = true;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	//	cout << "a" << endl;
+	//	cout << cambiado << endl;
+	//	best_slice.toString();
+	//	cin.get();
+}
+
+void expand (vector<vector<char> > pizza, vector<Slice> & slices) {
+	//	for (int i = 0; i < (int)pizza.size(); i++){
+	//		for (int j = 0; j < (int)pizza[0].size(); j++){
+	//			if
+	//		}
+	//	}
+}
+
 vector<vector<int> > matrizValores (vector<vector<char> > pizza, int rows, int cols){
 	vector<vector<int> > potencial (rows, vector<int> (cols, 0));
 	for (int i = 0; i < (int)pizza.size(); i ++){
 		for (int j = 0; j < (int)pizza[i].size(); j++){
-			int num_vecinos_diferentes = 0;
-			for (int n = 0; n < 4; n++){
-				coord actual; actual.x = i; actual.y = j;
-				coord vec = Vecino(n, actual);
-				if (vec.x >= 0 && vec.x < rows && vec.y >= 0 && vec.y < cols){
-					if ((pizza[actual.x][actual.y] == 'T' && pizza[vec.x][vec.y] == 'M')
-							|| (pizza[actual.x][actual.y] == 'M' && pizza[vec.x][vec.y] == 'T')){
-						num_vecinos_diferentes ++;
+			if (pizza[i][j] == 'V'){
+				potencial[i][j] = -1;
+			} else if (pizza[i][j] == 'A'){
+				potencial[i][j] = -2;
+			} else {
+				int num_vecinos_diferentes = 0;
+				for (int n = 0; n < 4; n++){
+					coord actual; actual.x = i; actual.y = j;
+					coord vec = Vecino(n, actual);
+					if (vec.x >= 0 && vec.x < rows && vec.y >= 0 && vec.y < cols){
+						if ((pizza[actual.x][actual.y] == 'T' && pizza[vec.x][vec.y] == 'M')
+								|| (pizza[actual.x][actual.y] == 'M' && pizza[vec.x][vec.y] == 'T')){
+							num_vecinos_diferentes ++;
+						}
 					}
 				}
+				potencial[i][j] = num_vecinos_diferentes;
 			}
-			potencial[i][j] = num_vecinos_diferentes;
 		}
 	}
 
-	for (int k = 0; k < (int)potencial.size(); k++){
-		for (int l = 0; l < (int)potencial[0].size(); l++){
-			cout << potencial[k][l] << "  ";
-		}
-		cout << endl;
-	}
+	//		for (int k = 0; k < (int)potencial.size(); k++){
+	//			for (int l = 0; l < (int)potencial[0].size(); l++){
+	//				cout << potencial[k][l] << "  ";
+	//			}
+	//			cout << endl;
+	//		}
 	return potencial;
 }
 
 void leeFichero(string name, int & rows, int & cols, int & min, int & max, vector<vector<char> > & body){
 	string linea;
 	ifstream infile;
-	infile.open ("small.in");
+	infile.open (name);
 	string firstline="";
 
 	getline(infile,firstline);
